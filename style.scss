@@ -1,0 +1,116 @@
+html {
+    background-image: url(bg.png);
+}
+
+@font-face {
+    font-family: 'd puntillas B to tiptoe';
+    src: url("d-puntillas-B-to-tiptoe.ttf") format("truetype");
+    font-weight: normal;
+    font-style: normal; 
+}
+
+header {
+    // background: red;
+    display: block;
+    height: 7em;
+    width: 47em;
+    margin: 1em auto;
+    text-align: center;
+    clear: both;
+}
+
+h1 {
+    font-family: 'd puntillas B to tiptoe', sans-serif;
+    font-size: 5em;
+    opacity: 0.4;
+    margin: {
+        left: 0.7em;
+        right: 0.7em;
+    }
+    max-width: 10em;
+    text-align: center; 
+}
+
+span#best, span#guesses {
+    display: block;
+    font-family: sans-serif;
+    float: left;
+    margin-top: 0.9em;
+    font-size: 3.0em;
+    position: absolute;
+}
+
+span#best {
+    left: 1em;
+    top: -2.5em;
+}
+
+span#guesses {
+    left: 14em;
+    top: -2.5em;
+}
+
+span#best:before {
+    content: "Best";
+    font-size: 0.3em;
+    position: relative;
+    right: -1.9em;
+    top: 1em;
+}
+
+span#guesses:after {
+    content: "guesses";
+    left: -3.0em;
+    top: 1em;
+    font-size: 0.3em;
+    position: relative;
+}
+
+div#memoryContainer {
+    width: 45.0em;
+    height: 45.0em;
+    margin: 0 auto; 
+    padding:1em;
+    position: relative;
+}
+
+ul {
+    max-width: 45em;
+    list-style: none;
+    margin-top: 10em;
+    margin-left: 10em;
+    position: relative;
+}
+
+li {
+    position: absolute;
+    max-height: 10em;
+    float: left;
+    padding: 0;
+    text-indent: 0; 
+    margin-left:1.2em;
+    margin-bottom:1.2em;
+    background-size: cover;
+}
+
+div.back, div.image {
+    box-shadow: '1px 1px 6px #888';
+    border-radius: 10%;
+    border: 5px solid #984;
+    position: absolute;
+    margin: 0;
+    width: 10em;
+    height: 10em;
+    display: inline-block;   
+    -moz-transition: -moz-transform 0.2s linear;
+    -webkit-transition: -webkit-transform 0.2s linear;
+}
+
+img#spinner {
+    position: absolute;
+    top: -6em;
+    left: 39em;
+    width: 6em;
+    border-radius: 25%;
+    border: 2px solid black;
+}
