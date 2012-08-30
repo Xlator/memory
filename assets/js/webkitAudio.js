@@ -41,6 +41,7 @@ BufferLoader.prototype.load = function() {
 
 WebkitAudio = {
     context: null,
+
     sounds: function() {
         var sounds = Array();
         $.each(Audio.sounds, function(key,value) {
@@ -59,15 +60,22 @@ WebkitAudio = {
     play: function(soundKey, volume) {
         var source = WebkitAudio.context.createBufferSource();
         var gainNode = WebkitAudio.context.createGainNode();
-        console.log(gainNode);
 
         source.buffer = WebkitAudio.bufferList[soundKey];
         source.connect(gainNode);
         gainNode.connect(WebkitAudio.context.destination);
         gainNode.gain.value = volume;
+        WebkitAudio.source[soundKey] = source;
         source.noteOn(0);
     },
 
+    source: { },
+
+    pause: function(soundKey) {
+        WebkitAudio.source[soundKey].noteOff(0);
+    },
+
+    complete: function() {},
     bufferList: Array(),
 }
 

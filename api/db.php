@@ -2,10 +2,20 @@
 
 class Database {
 
-    private static function getConnection() {
-        $dbh = new PDO("sqlite:db/memory.db");
-        $dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-        return $dbh;
+    public static function getConnection() {
+        // Create the database if it doesn't exist
+        if(!file_exists('db/memory.db')) {
+            copy('db/memory.db.dist', 'db/memory.db');
+            chmod('db/memory.db', 0700);
+        }
+        try {
+            $dbh = new PDO("sqlite:db/memory.db");
+            $dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            return $dbh;
+        }
+        catch(PDOException $e) {
+            return false;
+        }
     }
 
     private static function getResult($dbh, $query, $parameters) {

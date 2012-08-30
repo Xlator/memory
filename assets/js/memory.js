@@ -14,31 +14,35 @@ Audio = {
         tick: { file: 'assets/sounds/tick.wav', volume: 0.02 },
         again: { file: 'assets/sounds/again.wav', volume: 0.8 }
     }, 
+    findSoundKey: function(sound) {
+        var i = 0,
+        soundKey = 0;
+
+        $.each(Audio.sounds, function(key, value) {
+            if(key == sound) {
+                soundKey = i;
+            }
+            else {
+                i++;
+            }
+        });
+
+        return soundKey;
+    },
 
     play: function(sound) {
         if(WebkitAudio.context != null) {
-            var i = 0,
-            soundKey = 0,
-            volume = 0;
-
-            $.each(Audio.sounds, function(key, value) {
-                if(key == sound) {
-                    soundKey = i;
-                    volume = value.volume;
-                }
-                else {
-                    i++;
-                }
-            });
-
-            WebkitAudio.play(soundKey, volume);
+            WebkitAudio.play(Audio.findSoundKey(sound), Audio.sounds[sound].volume);
         }
         else
             $('audio#'+sound).get(0).play();
     },
 
     pause: function(sound) {
-        $('audio#'+sound).get(0).pause();
+        if(WebkitAudio.context != null)
+            WebkitAudio.pause(Audio.findSoundKey(sound));
+        else
+            $('audio#'+sound).get(0).pause();
     },
 
     setup: function() { // Insert <audio> tags in document body
@@ -164,7 +168,6 @@ Events = {
 
     resize: function(e) {
         var size = ($(window).height() - 46) / 55;
-        console.log(size);
         $('html').css('font-size', ($(window).height() - 46) / 55 + 'px');
     },
 
@@ -346,7 +349,8 @@ Memory = {
         }
 
         setTimeout(function () {
-            $('span#playagain').show().on(click, 'a', function() {
+            $('span#playagain').show().on(click, 'a', function(e) {
+                e.preventDefault();
                 Audio.pause('win');
                 Audio.play('again');
                 setTimeout(function() {
@@ -363,9 +367,6 @@ Memory = {
             dataType: "json",
             url: "api/post-highscore.php",
             data: { score: Memory.attempts },
-            success: function(response) {
-                console.log(response);
-            }
         });
     }
 };
@@ -374,7 +375,6 @@ Memory = {
 (function(window, document, undefined) {
     // Detect iOS devices and change click event to touchstart
     iOS = navigator.userAgent.indexOf('iPad') > -1 || navigator.userAgent.indexOf('iPhone') > -1;
-    console.log(iOS);
     click = iOS ? 'touchstart' : 'click';
 
     Events.resize();
