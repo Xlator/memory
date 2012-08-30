@@ -1,9 +1,9 @@
 html {
-  background-image: url(bg.png); }
+  background-image: url(../images/bg.png); }
 
 @font-face {
   font-family: 'd puntillas B to tiptoe';
-  src: url("d-puntillas-B-to-tiptoe.ttf") format("truetype");
+  src: url("../fonts/d-puntillas-B-to-tiptoe.ttf") format("truetype");
   font-weight: normal;
   font-style: normal; }
 
@@ -97,3 +97,39 @@ img#spinner {
   width: 6em;
   border-radius: 25%;
   border: 2px solid black; }
+
+div#dialog {
+  font-family: sans-serif;
+  display: none;
+  top: 1.4em;
+  position: absolute;
+  width: 7.7em;
+  height: 7.7em;
+  background: rgba(0, 0, 0, 0.7);
+  border-radius: 5%;
+  color: white;
+  font-size: 6em;
+  text-align: center; }
+  div#dialog div {
+    margin-top: 1.5em; }
+  div#dialog span#score {
+    display: block;
+    font-size: 3em;
+    margin: 0; }
+  div#dialog span#message {
+    display: block;
+    font-size: 0.3em;
+    color: yellow;
+    margin-top: 0.3em; }
+  div#dialog span#playagain {
+    display: block;
+    position: absolute;
+    font-size: 0.2em;
+    top: 2em;
+    left: 1em; }
+    div#dialog span#playagain a {
+      font-size: 2.8em;
+      display: block;
+      text-decoration: none;
+      font-weight: 600;
+      color: #66f; }

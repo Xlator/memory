@@ -6,10 +6,10 @@
         return 'data:image/' . $filetype . ';base64,' . base64_encode($imgbin);
     }
     $images = array(); 
-    if($handle = opendir('images')) {
+    if($handle = opendir('../images')) {
         while(false !== ($entry = readdir($handle))) {
             if($entry != "." && $entry != ".." && $entry != '.DS_Store') {
-                $images[] = encodeimage('images/'.$entry);
+                $images[] = encodeimage('../images/'.$entry);
             }
         } 
         closedir($handle);

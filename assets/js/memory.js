@@ -3,31 +3,39 @@ function Shuffle(o) {
 	return o;
 };
 
+
 Audio = {
     sounds: { 
-        purr: 'sounds/purr.wav', 
-        angry: 'sounds/angry.wav', 
-        flip: 'sounds/flip.wav',
-        start: 'sounds/start.wav',
+        purr: { file: 'assets/sounds/purr.wav', volume: 0.1 },
+        angry: { file: 'assets/sounds/angry.wav', volume: 0.2 },
+        flip: { file: 'assets/sounds/flip.wav', volume: 0.1 },
+        start: { file: 'assets/sounds/start.wav', volume: 0.4 },
+        win: { file: 'assets/sounds/MeowMix.wav', volume: 0.1 },
+        tick: { file: 'assets/sounds/tick.wav', volume: 0.02 },
+        again: { file: 'assets/sounds/again.wav', volume: 0.8 }
     }, 
 
     play: function(sound) {
         $('audio#'+sound).get(0).play();
     },
 
+    pause: function(sound) {
+        $('audio#'+sound).get(0).pause();
+    },
+
     setup: function() { // Insert <audio> tags in document body
         $.each(Audio.sounds, function(key, value) {
-            var audio = $('<audio/>', { id: key, src: value, preload: 'auto', volume: 1 }).appendTo($('body'));
-            document.getElementById(key).volume=.2;
+            var audio = $('<audio/>', { id: key, src: value.file, preload: 'auto', }).appendTo($('body'));
+            document.getElementById(key).volume=value.volume;
         });
     }
 }
 
 Defer = {
-    // Setup deferred objects
+    // Set up deferred objects
     fetchCards: $.Deferred(),
     deal: $.Deferred(),
-},
+}
 
 Animation = {
     dealIndex: 0,
@@ -102,10 +110,40 @@ Animation = {
             // Show the back and rotate it back into view
             setTimeout(front, 100);
         }
-    }
+    },
+
+    winDialog: function() {
+        $('span#score').text(Memory.attempts);
+        $('span#playagain').hide();
+        var left = ($(window).width() - $('div#dialog').width()) / 2;
+        $('div#dialog').css('left', left).fadeIn(500);
+        var playagainLeft = ($('div#dialog').width() - $('span#playagain').width()) / 2;
+        $('span#playagain').css('left', playagainLeft);
+    },
+
+    record: function() {
+
+        var oldrecord = parseInt($('span#best').text()),
+            newrecord = Memory.attempts;
+
+        interval = setInterval(function() {
+                $('span#best').text(--oldrecord);
+                Audio.play('tick');
+                if(oldrecord == newrecord)
+                    clearInterval(interval);
+        }, 100);
+    
+    },
 };
 
 Events = {
+
+    resize: function(e) {
+        var size = ($(window).height() - 46) / 55;
+        console.log(size);
+        $('html').css('font-size', ($(window).height() - 46) / 55 + 'px');
+    },
+
     firstClick: function(e) { 
         Audio.play('flip');
         
@@ -141,12 +179,22 @@ Memory = {
     cards: {}, // Image data URLs go here
     pairs: 0, // Number of pairs found
     attempts: 0, // Number of guesses
+    best: function() {
+        $.ajax({
+            type: "GET",
+            dataType: "json",
+            url: "api/get-highscore.php",
+            success: function(response) {
+                $('span#best').text(response.clicks);
+            }
+        });
+    },
 
     fetchCards: function() {
         $.ajax({
             type: "GET",
             dataType: "json",
-            url: "images.php",
+            url: "api/images.php",
             success: function(response) {
                 Memory.cards = response;
                 Defer.fetchCards.resolve();
@@ -181,7 +229,7 @@ Memory = {
             var back = $('<div/>').addClass('back')
                 .css({
                     'box-shadow': '1px 1px 6px #aaa',
-                    'background-image': 'url(back.png)',
+                    'background-image': 'url(assets/images/back.png)',
                     'background-size': 'cover',
                     '-webkit-transform': 'rotateX(0deg)',
                     '-moz-transform': 'rotateX(0deg)',
@@ -199,7 +247,7 @@ Memory = {
     },
 
     startGame: function() {
-        setTimeout(function() {
+        setTimeout(function() { // Play start sound and create event handlers after a small pause
             Audio.play('start');
             $('img#spinner').hide();
             $('span').show();
@@ -207,6 +255,7 @@ Memory = {
             $(document).on('memory/fail', Memory.failure);
             $(document).on('memory/success', Memory.success);
             $(document).on('memory/gameOver', Memory.gameOver);
+            $(document).on('memory/record', Memory.record);
         }, 500);
     },
 
@@ -222,28 +271,27 @@ Memory = {
     },
 
     success: function() {
-        Audio.play('purr');
         Memory.pairs++;
         if(Memory.pairs == 8) {
             $(document).trigger('memory/gameOver');
             return
         }
+        else
+            Audio.play('purr');
         Memory.reset();
     },
 
     failure: function() {
         Audio.play('angry');
         $('div.back').css({
-            'background-image': 'url(angry-back.png)',
-            // '-moz-transition-property': 'none',
-            // '-webkit-transition-property': 'none',
+            'background-image': 'url(assets/images/angry-back.png)',
         });
         dfd = $.Deferred();
         setTimeout(function() {
             Animation.unflip(Events.firstClicked);
             Animation.unflip(Events.lastClicked);
             $('div.back').delay(1000).queue(function() { 
-                $(this).css({ 'background-image': 'url(back.png)', });
+                $(this).css({ 'background-image': 'url(assets/images/back.png)', });
                 $(this).dequeue();
                 dfd.resolve();
             });
@@ -252,19 +300,55 @@ Memory = {
     },
 
     reset: function() {
-        console.log('reset');
         $('body').one('click', 'div.back', Events.firstClick);
     },
     gameOver: function() {
-        console.log('A winner is you');
-        console.log(Memory.attempts + ' guesses');
+        Audio.play('win');
+        Animation.winDialog();
+
+        if(parseInt($('span#best').text()) > Memory.attempts) {
+            setTimeout(function() { 
+                $('span#message').text("(That's a new record!)");
+                $(document).trigger('memory/record'); 
+            }, 1200);
+        }
+
+        setTimeout(function () {
+            $('span#playagain').show().on('click', 'a', function() {
+                Audio.pause('win');
+                Audio.play('again');
+                setTimeout(function() {
+                    window.location = "./";
+                }, 1000);
+            });
+        }, 5000);
     },
+
+    record: function() {
+        setTimeout(Animation.record, 600);
+        $.ajax({
+            type: "POST",
+            dataType: "json",
+            url: "api/post-highscore.php",
+            data: { score: Memory.attempts },
+            success: function(response) {
+                console.log(response);
+            }
+        });
+    }
 };
 
 
 (function(window, document, undefined) {
+    Events.resize();
+    $(window).on('resize', window, Events.resize);
     $('span').hide();
+
+    if('webkitAudioContext' in window)
+        Audio.webkit = true;
+
     Audio.setup();
+    Memory.best();
     Memory.fetchCards();
     Defer.fetchCards.done(Memory.deal);
     Defer.deal.done(Memory.startGame);
