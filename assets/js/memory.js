@@ -16,7 +16,25 @@ Audio = {
     }, 
 
     play: function(sound) {
-        $('audio#'+sound).get(0).play();
+        if(WebkitAudio.context != null) {
+            var i = 0,
+            soundKey = 0,
+            volume = 0;
+
+            $.each(Audio.sounds, function(key, value) {
+                if(key == sound) {
+                    soundKey = i;
+                    volume = value.volume;
+                }
+                else {
+                    i++;
+                }
+            });
+
+            WebkitAudio.play(soundKey, volume);
+        }
+        else
+            $('audio#'+sound).get(0).play();
     },
 
     pause: function(sound) {
@@ -24,10 +42,16 @@ Audio = {
     },
 
     setup: function() { // Insert <audio> tags in document body
-        $.each(Audio.sounds, function(key, value) {
-            var audio = $('<audio/>', { id: key, src: value.file, preload: 'auto', }).appendTo($('body'));
-            document.getElementById(key).volume=value.volume;
-        });
+        if('webkitAudioContext' in window) {
+            WebkitAudio.init();
+        }
+
+        else {
+            $.each(Audio.sounds, function(key, value) {
+                var audio = $('<audio/>', { id: key, src: value.file, preload: 'auto', }).appendTo($('body'));
+                document.getElementById(key).volume=value.volume;
+            });
+        }
     }
 }
 
@@ -155,7 +179,7 @@ Events = {
         Animation.flip();
 
         // Setup event handler for the next click
-        $('body').one('click', 'div.back', Events.secondClick);
+        $('body').one(click, 'div.back', Events.secondClick);
     },
 
     secondClick: function(e) {
@@ -247,11 +271,19 @@ Memory = {
     },
 
     startGame: function() {
+  
+
+        if(iOS) {
+            $(document).on('touchstart', 'header', function() {
+                alert('hax');
+                Audio.play('start');
+            });
+        }
         setTimeout(function() { // Play start sound and create event handlers after a small pause
             Audio.play('start');
             $('img#spinner').hide();
             $('span').show();
-            $('body').one('click', 'div.back', Events.firstClick);
+            $('body').one(click, 'div.back', Events.firstClick);
             $(document).on('memory/fail', Memory.failure);
             $(document).on('memory/success', Memory.success);
             $(document).on('memory/gameOver', Memory.gameOver);
@@ -300,7 +332,7 @@ Memory = {
     },
 
     reset: function() {
-        $('body').one('click', 'div.back', Events.firstClick);
+        $('body').one(click, 'div.back', Events.firstClick);
     },
     gameOver: function() {
         Audio.play('win');
@@ -314,7 +346,7 @@ Memory = {
         }
 
         setTimeout(function () {
-            $('span#playagain').show().on('click', 'a', function() {
+            $('span#playagain').show().on(click, 'a', function() {
                 Audio.pause('win');
                 Audio.play('again');
                 setTimeout(function() {
@@ -340,16 +372,20 @@ Memory = {
 
 
 (function(window, document, undefined) {
+    // Detect iOS devices and change click event to touchstart
+    iOS = navigator.userAgent.indexOf('iPad') > -1 || navigator.userAgent.indexOf('iPhone') > -1;
+    console.log(iOS);
+    click = iOS ? 'touchstart' : 'click';
+
     Events.resize();
-    $(window).on('resize', window, Events.resize);
     $('span').hide();
 
-    if('webkitAudioContext' in window)
-        Audio.webkit = true;
+    // window.addEventListener('load', WebkitAudio.init, false);
 
     Audio.setup();
     Memory.best();
     Memory.fetchCards();
     Defer.fetchCards.done(Memory.deal);
     Defer.deal.done(Memory.startGame);
-}());
+}(window, document, undefined));
+
