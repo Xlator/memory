@@ -11,7 +11,7 @@
     <link media="all" href="http://yui.yahooapis.com/3.3.0/build/cssreset/reset-min.css" type="text/css" rel="stylesheet" />
 
     <link rel="stylesheet" href="assets/css/style.css" />
-    <script type=text/javascript src=http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.js></script>
+    <script type=text/javascript src=http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js></script>
 
 
 </head>
